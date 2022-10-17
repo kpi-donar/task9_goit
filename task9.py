@@ -1,18 +1,18 @@
 CONTACTS = {}
 
+
 def input_error(handler):
 	def wrapper(*args, **kargs):
 		try:
-			res = handler(*args, **kargs)
-			return res
+			return handler(*args, **kargs)
 		except KeyError:
-			print('Enter user name')
+			return 'Enter user name'
 		except ValueError:
-			print('Give me name and phone please')
+			return 'Give me name and phone please'
 		except IndexError:
-			print('Try again')
+			return 'Try again'
 		except TypeError:
-			print('Give me name and phone please')
+			return 'Give me name and phone please'
 	return wrapper
 
 
@@ -21,20 +21,21 @@ def hello():
 
 
 def quit_func():
-	print('Good bye!')
-	quit()
+	return 'Good bye!'
 
 
 def show():
 	return CONTACTS
 
 @input_error
-def add(name, phone):
+def add(data):
+	name, phone = create_data(data)
 	CONTACTS[name] = phone
 	return "Contact added!"
 
 @input_error
-def change(name, phone):
+def change(data):
+	name, phone = create_data(data)
 	if name in CONTACTS:
 		CONTACTS[name] = phone
 		return 'Contact changed'
@@ -45,19 +46,48 @@ def change(name, phone):
 def phone_func(name):
 	return CONTACTS[name]
 
+
+def change_input(user_input):
+	new_input = user_input
+	data = ''
+	for key in COMMANDS:
+		if user_input.lower().startswith(key):
+			new_input = key
+			data = user_input[len(new_input):]
+			break
+	if data:
+		return reaction_func(new_input)(data)
+	return reaction_func(new_input)()
+
+
+def reaction_func(reaction):
+	return COMMANDS.get(reaction, break_func)
+
+
+def break_func():
+    return 'Wrong enter.'
+
+
+def create_data(data):
+	new_data = data.split()
+	name = new_data[0]
+	phone = new_data[1]
+	if name.isnumeric():
+		raise ValueError()
+	if not phone.isnumeric():
+		raise ValueError()
+	return name, phone
+
+COMMANDS = {'hello': hello, 'add': add, 'change': change, 'phone': phone_func, 'show all': show, 'good bye': quit_func, 'close': quit_func, 'exit': quit_func}
+
 @input_error
 def main():
-	COMMANDS = {'hello': hello, 'add': add, 'change': change, 'phone': phone_func, 'show_all': show, 'good bye': quit_func, 'close': quit_func, 'exit': quit_func}
-
 	while True:
-		command = input("Input command:").lower()
-		command = command.split()
-		if len(command) == 1 and command[0] in COMMANDS:
-			print(COMMANDS[command[0]]())
-		elif len(command) == 2 and command[0] in COMMANDS:
-			print(COMMANDS[command[0]](name = command[1]))
-		elif len(command) == 3 and command[0] in COMMANDS:
-			print(COMMANDS[command[0]](name = command[1], phone = command[2]))
+		user_input = input('Enter command for bot: ')
+		result = change_input(user_input)
+		print(result)
+		if result == 'Good bye!':
+			break
 
 
 if __name__ == '__main__':
