@@ -1,9 +1,9 @@
 CONTACTS = {}
 
 def input_error(handler):
-	def wrapper(*args):
+	def wrapper(*args, **kargs):
 		try:
-			res = handler(*args)
+			res = handler(*args, **kargs)
 			return res
 		except KeyError:
 			print('Enter user name')
